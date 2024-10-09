@@ -14,6 +14,8 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\OpenApi\Model\Operation;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -30,12 +32,14 @@ use ApiPlatform\OpenApi\Model\Operation;
     ),
     new Post(
     uriTemplate: '/api/users',
+    name:"create_user",
     openapi: new Operation(
     summary: 'Ajouter un utilisateur',
     )
     )],
-    normalizationContext: ['groups' => ['read'], 'enable_max_depth' => true],
-    denormalizationContext: ['groups' => ['write'], 'enable_max_depth' => true],
+
+    normalizationContext: ['groups' => ['read']],
+    denormalizationContext: ['groups' => ['write']],
     forceEager: false,
 )]
 
