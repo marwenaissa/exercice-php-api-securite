@@ -3,33 +3,85 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\OpenApi\Model\Operation;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+
+#[ApiResource(
+    shortName: 'Utilisateurs',
+    operations: [
+    new Get(
+    uriTemplate: '/api/users/{id}',
+    openapi: new Operation(
+    summary: 'Récupérer un utilisateur'
+    )
+    ),
+    new Post(
+    uriTemplate: '/api/users',
+    openapi: new Operation(
+    summary: 'Ajouter un utilisateur',
+    )
+    )],
+    normalizationContext: ['groups' => ['read'], 'enable_max_depth' => true],
+    denormalizationContext: ['groups' => ['write'], 'enable_max_depth' => true],
+    forceEager: false,
+)]
+
+
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Groups(['read', 'write'])]
     private ?string $email = null;
-
+    
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
     private array $roles = [];
-
+    
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Groups(['read', 'write'])]
     private ?string $password = null;
+
+    /**
+     * @var Collection<int, Projet>
+     */
+    #[ORM\ManyToMany(targetEntity: Projet::class, mappedBy: 'users')]
+    private Collection $projets;
+
+    /**
+     * @var Collection<int, UserSociete>
+     */
+    #[ORM\OneToMany(targetEntity: UserSociete::class, mappedBy: 'idUser')]
+    private Collection $userSocietes;
+
+    public function __construct()
+    {
+        $this->projets = new ArrayCollection();
+        $this->userSocietes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -104,5 +156,62 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection<int, Projet>
+     */
+    public function getProjets(): Collection
+    {
+        return $this->projets;
+    }
+
+    public function addProjet(Projet $projet): static
+    {
+        if (!$this->projets->contains($projet)) {
+            $this->projets->add($projet);
+            $projet->addUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProjet(Projet $projet): static
+    {
+        if ($this->projets->removeElement($projet)) {
+            $projet->removeUser($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserSociete>
+     */
+    public function getUserSocietes(): Collection
+    {
+        return $this->userSocietes;
+    }
+
+    public function addUserSociete(UserSociete $userSociete): static
+    {
+        if (!$this->userSocietes->contains($userSociete)) {
+            $this->userSocietes->add($userSociete);
+            $userSociete->setIdUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserSociete(UserSociete $userSociete): static
+    {
+        if ($this->userSocietes->removeElement($userSociete)) {
+            // set the owning side to null (unless already changed)
+            if ($userSociete->getIdUser() === $this) {
+                $userSociete->setIdUser(null);
+            }
+        }
+
+        return $this;
     }
 }
