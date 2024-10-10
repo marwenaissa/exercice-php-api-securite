@@ -7,9 +7,20 @@ use App\Repository\SocieteRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\UserRepository;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\OpenApi\Model\Operation;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: SocieteRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['user:societe:read', 'societe:read']],
+)]
 class Societe
 {
     #[ORM\Id]
@@ -18,12 +29,15 @@ class Societe
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['user:societe:read', 'user:projet:read' , 'societe:read'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['user:societe:read', 'societe:read'])]
     private ?string $numeroSIRET = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['user:societe:read', 'societe:read'])]
     private ?string $adresse = null;
 
     /**

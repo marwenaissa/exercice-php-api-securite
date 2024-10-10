@@ -15,7 +15,8 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\OpenApi\Model\Operation;
 use Symfony\Component\Serializer\Annotation\Groups;
-
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -25,37 +26,47 @@ use Symfony\Component\Serializer\Annotation\Groups;
     shortName: 'Utilisateurs',
     operations: [
     new Get(
-    uriTemplate: '/api/users/{id}',
-    openapi: new Operation(
-    summary: 'Récupérer un utilisateur'
-    )
+        uriTemplate: '/users/{id}',
+        openapi: new Operation(
+            summary: 'Récupérer un utilisateur',
+        ),
+        normalizationContext: ['groups' => ['user:societe:read']],
+    ),
+    new Get(
+        uriTemplate: '/users/projets/{id}',
+        openapi: new Operation(
+            summary: 'Récupérer les projets associés à un utilisateur',
+        ),
+        normalizationContext: ['groups' => ['user:projet:read']],
     ),
     new Post(
-    uriTemplate: '/api/users',
+    uriTemplate: '/users',
     name:"create_user",
     openapi: new Operation(
     summary: 'Ajouter un utilisateur',
     )
     )],
 
-    normalizationContext: ['groups' => ['read']],
-    denormalizationContext: ['groups' => ['write']],
+    normalizationContext: ['groups' => ['user:societe:read' , 'user:projet:read' ]],
+    denormalizationContext: ['groups' => ['user:societe:write']],
     forceEager: false,
 )]
-
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['read'])]
+    #[Groups(['user:societe:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['read', 'write'])]
+    #[Groups(['user:societe:read', 'user:societe:write'])]
+    #[Assert\NotBlank(message:"L'email est obligatoire")]
+    #[Assert\Email(message:"L'email est invalide")]
     private ?string $email = null;
     
+
     /**
      * @var list<string> The user roles
      */
@@ -66,7 +77,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
-    #[Groups(['read', 'write'])]
+    #[Groups(['user:societe:read', 'user:projet:read' , 'user:societe:write'])]
     private ?string $password = null;
 
     /**
@@ -79,6 +90,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, UserSociete>
      */
     #[ORM\OneToMany(targetEntity: UserSociete::class, mappedBy: 'idUser')]
+    #[Groups(['user:societe:read' , 'user:projet:read'])]
     private Collection $userSocietes;
 
     public function __construct()
@@ -210,7 +222,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeUserSociete(UserSociete $userSociete): static
     {
         if ($this->userSocietes->removeElement($userSociete)) {
-            // set the owning side to null (unless already changed)
+            // set the owning side to null (unless aluser:societe:ready changed)
             if ($userSociete->getIdUser() === $this) {
                 $userSociete->setIdUser(null);
             }

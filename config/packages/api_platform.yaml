@@ -1,8 +1,21 @@
 api_platform:
-    title: Exercice USTS
+    title: API WIWORK 
+    description: Bienvenue sur L'API wiwork
+    enable_profiler: true
     version: 1.0.0
     formats:
-        jsonld: ['application/ld+json']
+        jsonld: ['application/ld+json'],
+        json: ['application/json'],
+        text: [text/plain; charset=utf-8],
+        pdf:  [application/pdf],
+        octet-stream: ['application/octet-stream'],
+        multipart: ['multipart/form-data']
+        xml:      ['application/xml', 'text/xml']
+        yaml:     ['application/x-yaml']
+        csv:      ['text/csv']
+        html:     ['text/html']
+        excel: ['application/vnd.ms.excel'],
+        form: ['application/x-www-form-urlencoded']
     docs_formats:
         jsonld: ['application/ld+json']
         jsonopenapi: ['application/vnd.openapi+json']
@@ -14,10 +27,12 @@ api_platform:
         extra_properties:
             standard_put: true
             rfc_7807_compliant_errors: true
+    event_listeners_backward_compatibility_layer: false
     keep_legacy_inflector: false
-    use_symfony_listeners: true
+    eager_loading:
+        max_joins: 50 # Augmentez cette valeur selon vos besoins
     swagger:
-        api_keys:
-            JWT:
+         api_keys:
+             JWT:
                 name: Authorization
                 type: header

@@ -4,8 +4,14 @@ namespace App\Entity;
 
 use App\Repository\RoleRepository;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
+use App\Repository\SocieteRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 
 #[ORM\Entity(repositoryClass: RoleRepository::class)]
+#[ApiResource]
 class Role
 {
     #[ORM\Id]
@@ -14,6 +20,7 @@ class Role
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['read'])]
     private ?string $nom = null;
 
     public function getId(): ?int
