@@ -15,6 +15,11 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\OpenApi\Model\Operation;
 use Symfony\Component\Serializer\Annotation\Groups;
+
+
+
+
+
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -48,7 +53,9 @@ use Symfony\Component\Validator\Constraints\NotBlank;
     )],
 
     normalizationContext: ['groups' => ['user:societe:read' , 'user:projet:read' ]],
-    denormalizationContext: ['groups' => ['user:societe:write']],
+    denormalizationContext: ['groups' => ['user:societe:write' ]],
+
+
     forceEager: false,
 )]
 

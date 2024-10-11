@@ -37,7 +37,14 @@ use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
     openapi: new Operation(
     summary: "Créer un projet au sein d'une société",
     )
-    )],
+    ),
+    new Delete(
+        uriTemplate: '/projets/{id}',
+        openapi: new Operation(
+            summary: "Supprimer un projet"
+        )
+    )
+    ],
    
     normalizationContext: ['groups' => ['user:projet:read']],
     denormalizationContext: ['groups' => ['projet:write']],
